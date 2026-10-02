@@ -1,27 +1,27 @@
 #ifndef IO_BIT_WRITER_H
 #define IO_BIT_WRITER_H
 
-#include <string>
+#include <cstdint>
+#include <iosfwd>
 #include <vector>
 
-namespace io
-{
-class BitWriter
-{
-private:
-	uint8_t buffer;
+namespace io {
+class BitWriter {
 
-	int bitCount;
+private:
 
 	std::ostream& out;
+	std::uint8_t buffer;
+	int bitCount;
 
 
 public:
-	BitWriter(std::ostream& out);
+
+	explicit BitWriter(std::ostream& out);
 
 	void writeBit(bool bit);
 
-	void writeCode(std::vector<bool> code);
+	void writeCode(const std::vector<bool>& code);
 
 	void flush();
 
