@@ -2,17 +2,23 @@
 #define IO_P_P_M_FILE_H
 
 #include <string>
+#include <istream>
+#include "modelo/Image.hpp"
 
-#include "../modelo/Image.hpp"
+namespace io {
 
-namespace io
-{
-class PPMFile
-{
+class PPMFile {
+
 public:
-	static modelo::Image read(std::string path);
 
-	static void write(std::string path, modelo::Image img);
+	PPMFile() = delete;
+
+	static modelo::Image read(const std::string& path);
+	static void write(const std::string& path, const modelo::Image& img);
+
+private:
+
+	static int readHeaderValue(std::istream& in);
 
 };
 
