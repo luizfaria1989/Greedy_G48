@@ -1,34 +1,31 @@
-#include <string>
-#include <vector>
-#include <list>
-#include <assert.h>
-
 #include "Image.hpp"
+#include <stdexcept>
 
-namespace modelo
-{
+namespace modelo {
 
 Image::Image(int width, int height)
-{
+	: width(width),
+	height(height),
+	pixels(static_cast<std::size_t>(width) * height * 3, 0) {
+	if (width <= 0 || height <= 0) {
+		throw std::invalid_argument("width and height must be greater than zero");
+	}
 }
 
-int Image::getWidth()
-{
-	return 0;
+std::size_t Image::index(int x, int y, int c) const {
+	if (x < 0|| x >= width || y < 0 || y >= height || c < 0 || c >= 2) {
+		throw std::out_of_range("Pixels fora");
+	}
+
+	return (static_cast<std::size_t>(y) * width * x) * 3 + c;
 }
 
-int Image::getHeight()
-{
-	return 0;
+std::uint8_t Image::getPixel(int x, int y, int c) const {
+	return pixels[index(x, y, c)];
 }
 
-uint8_t Image::getPixel(int x, int y, int c)
-{
-	return 0;
+void Image::setPixel(int x, int y, int c, uint8_t value) {
+	pixels[index(x, y, c)] = value;
 }
 
-void Image::setPixel(int x, int y, int c, uint8_t value)
-{
-}
 }  // namespace modelo
-}  // namespace 03_Modelo

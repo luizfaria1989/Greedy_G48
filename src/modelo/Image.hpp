@@ -1,32 +1,32 @@
 #ifndef MODELO_IMAGE_H
 #define MODELO_IMAGE_H
 
-#include <string>
+#include <cstddef>
+#include <cstdint>
+#include <vector>
 
-#include "vector_uint8_t_.hpp"
+namespace modelo {
 
-namespace modelo
-{
-class Image
-{
-private:
-	int width;
-
-	int height;
-
-	vector_uint8_t_ pixels;
-
-
+class Image {
 public:
+
 	Image(int width, int height);
 
-	int getWidth();
+	int getWidth() const { return width; }
+	int getHeight() const { return height; }
 
-	int getHeight();
+	std::uint8_t getPixel(int x, int y, int c) const;
+	void setPixel(int x, int y, int c, std::uint8_t value);
 
-	uint8_t getPixel(int x, int y, int c);
 
-	void setPixel(int x, int y, int c, uint8_t value);
+private:
+
+	std::size_t index(int x, int y, int c) const;
+
+	int width;
+	int height;
+	std::vector<uint8_t> pixels;
+
 
 };
 
