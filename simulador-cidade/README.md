@@ -16,7 +16,7 @@
 
 Cidade em Fluxo é um simulador acadêmico que permite observar como semáforos e uma nova via afetam os congestionamentos. A cidade é um grafo dirigido de 16 cruzamentos; veículos são agentes com origem, destino, rota e estado. Um motor de eventos discretos controla chegadas, filas e liberações de passagem.
 
-O foco acadêmico agora é **Scheduling to Minimize Lateness**, implementado de forma independente na pasta [`scheduling_minimize_lateness/`](scheduling_minimize_lateness/). O algoritmo clássico ordena tarefas pelo prazo mais próximo para minimizar o maior atraso em uma única máquina. No trânsito, cada fase elegível de um cruzamento recebe um prazo; o semáforo escolhe primeiro a fase cujo prazo vence antes. A interface e os experimentos comparam essa política com ciclo fixo e com a regra anterior de maior fila, em malhas com e sem a nova via.
+O foco acadêmico agora é **Scheduling to Minimize Lateness**, implementado de forma independente na pasta [`scheduling_minimize_lateness/`](simulador-cidade/scheduling_minimize_lateness/). O algoritmo clássico ordena tarefas pelo prazo mais próximo para minimizar o maior atraso em uma única máquina. No trânsito, cada fase elegível de um cruzamento recebe um prazo; o semáforo escolhe primeiro a fase cujo prazo vence antes. A interface e os experimentos comparam essa política com ciclo fixo e com a regra anterior de maior fila, em malhas com e sem a nova via.
 
 ## Instalação
 
