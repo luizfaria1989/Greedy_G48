@@ -4,25 +4,17 @@
 #include <string>
 #include <vector>
 
-#include "algoritmos/extracao/SymbolExtractor.hpp"
-#include "algoritmos/extracao/SymbolStream.hpp"
-#include "modelo/Image.hpp"
+#include "SymbolExtractor.hpp"
 
-namespace algoritmos
-{
-namespace extracao
-{
-class PackedPixelExtractor : public SymbolExtractor
-{
-public:
-	std::string getName();
+namespace algoritmos::extracao {
 
-	std::vector<SymbolStream> extract(modelo::Image img);
+	class PackedPixelExtractor : public SymbolExtractor {
 
-	modelo::Image rebuild(std::vector<SymbolStream> streams, int width, int height);
+	public:
+		std::vector<SymbolStream> extract(const modelo::Image& img) const override;
+		modelo::Image rebuild(const std::vector<SymbolStream>& streams, int width, int height) const override;
+		std::string getName() const override;
+	};
 
-};
-
-}  // namespace extracao
-}  // namespace algoritmos
+}  // namespace algoritmos::extracao
 #endif
