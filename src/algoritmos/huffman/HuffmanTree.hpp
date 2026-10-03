@@ -1,40 +1,39 @@
 #ifndef ALGORITMOS_HUFFMAN_HUFFMAN_TREE_H
 #define ALGORITMOS_HUFFMAN_HUFFMAN_TREE_H
 
-#include <string>
+#include "HuffmanNode.hpp"
+#include "FrequencyTable.hpp"
+
+#include <cstdint>
+#include <memory>
+#include <unordered_map>
 #include <vector>
-#include <list>
 
-#include "algoritmos/huffman/HuffmanNode.hpp"
-#include "algoritmos/huffman/FrequencyTable.hpp"
-#include "io/BitReader.hpp"
+namespace io {
+	class BitReader;
+}
 
-namespace algoritmos
-{
-namespace huffman
-{
-class HuffmanTree
-{
+namespace algoritmos::huffman {
+
+class HuffmanTree {
+
+public:
+	explicit HuffmanTree(const FrequencyTable& freq);
+
+	const std::vector<bool>& getCode(std::uint32_t symbol) const;
+
+	std::uint32_t decodeSymbol(io::BitReader& reader) const;
+
 private:
 	std::unique_ptr<HuffmanNode> root;
 
-	std::unordered_map<uint32_t,std::vector<bool>> codes;
+	std::unordered_map<std::uint32_t,std::vector<bool>> codes;
 
+	void build(const FrequencyTable& freq);
 
-private:
-	void build(FrequencyTable freq);
-
-	void generateCodes(HuffmanNode* node, std::vector<bool> prefix);
-
-public:
-	HuffmanTree(FrequencyTable freq);
-
-	std::vector<bool> getCode(uint32_t symbol);
-
-	uint32_t decodeSymbol(io::BitReader& reader);
+	void generateCodes(const HuffmanNode* node, std::vector<bool> prefix);
 
 };
 
-}  // namespace huffman
-}  // namespace algoritmos
+}  // namespace algoritmos::huffman
 #endif
