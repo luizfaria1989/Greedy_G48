@@ -1,33 +1,33 @@
-#ifndef LGORITMOS_HUFFMAN_HUFFMAN_NODE_H
+#ifndef ALGORITMOS_HUFFMAN_HUFFMAN_NODE_H
 #define ALGORITMOS_HUFFMAN_HUFFMAN_NODE_H
 
-#include <string>
+#include <memory>
+#include <cstdint>
 
-namespace algoritmos
-{
-namespace huffman
-{
-class HuffmanNode
-{
-private:
-	int64_t frequency;
+namespace algoritmos::huffman {
 
-	uint32_t symbol;
-
-	std::unique_ptr<HuffmanNode> left;
-
-	std::unique_ptr<HuffmanNode> right;
-
+class HuffmanNode {
 
 public:
-	bool isLeaf();
+	// Folha: guarda um símbolo e quantas vezes ele aparece
+	HuffmanNode(std::uint32_t symbol,std::uint64_t frequency);
 
-	HuffmanNode(uint32_t symbol,uint64_t frequency);
+	// Nó interno: recebe os dois filhos
+	HuffmanNode(std::unique_ptr<HuffmanNode> leftChild, std::unique_ptr<HuffmanNode> rightChild);
 
-	HuffmanNode(std::unique_ptr<HuffmanNode> left, std::unique_ptr<HuffmanNode> right);
+	bool isLeaf() const { return left == nullptr; }
+	std::uint64_t getFrequency() const { return frequency; };
+	std::uint32_t getSymbol() const { return symbol; };
+	const HuffmanNode* getLeft() const {return left.get(); };
+	const HuffmanNode* getRight() const {return right.get(); };
+
+private:
+	std::uint64_t frequency;
+	std::uint32_t symbol;
+	std::unique_ptr<HuffmanNode> left;
+	std::unique_ptr<HuffmanNode> right;
 
 };
 
-}  // namespace huffman
-}  // namespace algoritmos
+}  // namespace algoritmos::huffman
 #endif

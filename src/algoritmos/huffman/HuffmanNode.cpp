@@ -1,23 +1,20 @@
-#include <list>
-
 #include "HuffmanNode.hpp"
 
-namespace algoritmos
-{
-namespace huffman
-{
+#include <utility>
 
-bool HuffmanNode::isLeaf()
-{
-	return false;
-}
+namespace algoritmos::huffman {
 
-HuffmanNode::HuffmanNode(uint32_t symbol, uint64_t frequency)
-{
-}
+	HuffmanNode::HuffmanNode(std::uint32_t symbol, std::uint64_t frequency) : frequency(frequency),
+	symbol(symbol){
 
-HuffmanNode::HuffmanNode(std::unique_ptr<HuffmanNode> left, std::unique_ptr<HuffmanNode> right)
-{
+	}
+
+	HuffmanNode::HuffmanNode(std::unique_ptr<HuffmanNode> leftChild, std::unique_ptr<HuffmanNode> rightChild) :
+	frequency(0),
+	symbol(0),
+	left(std::move(leftChild)),
+	right(std::move(rightChild)) {
+		frequency = left->frequency + right->frequency;
+	}
+
 }
-}  // namespace huffman
-}  // namespace algoritmos
