@@ -4,26 +4,19 @@
 #include <string>
 #include <vector>
 
-#include "algoritmos/extracao/SymbolStream.hpp"
+#include "SymbolStream.hpp"
 #include "modelo/Image.hpp"
 
-namespace algoritmos
+namespace algoritmos::extracao
 {
-namespace extracao
-{
-class SymbolExtractor
-{
+class SymbolExtractor {
+
 public:
-	virtual std::string getName()=0;
-
-	virtual std::vector<SymbolStream> extract(modelo::Image img)=0;
-
-	virtual modelo::Image rebuild(std::vector<SymbolStream> streams, int width, int height)=0;
-
-	˜SymbolExtractor();
-
+	virtual ~SymbolExtractor() = default;
+	virtual std::vector<SymbolStream> extract(const modelo::Image& img) const = 0;
+	virtual modelo::Image rebuild(const std::vector<SymbolStream>& streams, int width, int height) const = 0;
+	virtual std::string getName() const = 0;
 };
 
-}  // namespace extracao
-}  // namespace algoritmos
+}  // namespace algoritmos::extracao
 #endif
