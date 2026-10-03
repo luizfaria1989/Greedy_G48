@@ -1,41 +1,36 @@
 #ifndef ALGORITMOS_HUFFMAN_FREQUENCY_TABLE_H
 #define ALGORITMOS_HUFFMAN_FREQUENCY_TABLE_H
 
-#include <list>
+#include <cstdint>
+#include <iosfwd>
+#include <unordered_map>
 
-#include "SymbolStream.hpp"
-#include "unordered_map.hpp"
-#include "03_Modelo/ostream.hpp"
-#include "03_Modelo/istream.hpp"
+#include "algoritmos/extracao/SymbolStream.hpp"
 
-namespace algoritmos
-{
-namespace huffman
-{
-class FrequencyTable
-{
-private:
-	std::unordered_map<uint32_t,uint64_t> counts;
+namespace algoritmos::huffman {
 
-
-private:
-	FrequencyTable(std::unordered_map<uint32_t,uint64_t> counts);
+class FrequencyTable {
 
 public:
-	FrequencyTable(extracao::SymbolStream stream);
 
-	uint64_t getFrequency(uint32_t symbol);
+	using Counts = std::unordered_map<std::uint32_t,std::uint64_t>;
 
-	std::unordered_map<uint32_t,uint64_t> getCounts();
+	explicit FrequencyTable(const extracao::SymbolStream& stream);
 
-	void writeTo(ostream& out);
+	std::uint64_t getFrequency(std::uint32_t symbol) const;
+	const Counts& getCounts() const;
+	std::uint64_t getTotal() const;
 
-	static FrequencyTable readFrom(istream& in);
+	void writeTo(std::ostream& out) const;
+	static FrequencyTable readFrom(std::istream& in);
 
-	uint64_t getTotal();
+
+
+private:
+	FrequencyTable(Counts counts);
+	Counts counts;
 
 };
 
-}  // namespace huffman
-}  // namespace algoritmos
+}  // namespace algoritmos::huffman
 #endif
