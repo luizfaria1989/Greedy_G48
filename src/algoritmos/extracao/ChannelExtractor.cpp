@@ -1,8 +1,7 @@
-#include <string>
-#include <vector>
-#include <list>
-
 #include "ChannelExtractor.hpp"
+
+#include <stdexcept>
+#include <utility>
 
 namespace algoritmos::extracao {
 
@@ -29,26 +28,38 @@ namespace algoritmos::extracao {
 		return streams;
 	}
 
-	// modelo::Image ChannelExtractor::rebuild(const std::vector<SymbolStream>& streams, int width, int height) const {
-	//
-	// 	if (streams.size() != 3) {
-	// 		throw std::invalid_argument("Invalid number of streams");
-	// 	}
-	//
-	// 	modelo::Image img(width, height);
-	//
-	// 	for (int y = 0; y < height; y++) {
-	// 		for (int x = 0; x < width; x++) {
-	// 			for (int c = 0; c < 3; c++) {
-	// 				if (streams[c][x, y] != 255) {
-	// 					throw std::invalid_argument("arquivo corrompido");
-	// 				}
-	// 				img.setPixel(x, y, c, static_cast<std::uint8_t>(valor));
-	// 			}
-	// 		}
-	// 	}
-	// 	return img;
-	// }
+	modelo::Image ChannelExtractor::rebuild(const std::vector<SymbolStream>& streams, int width, int height) const {
+
+		std::size_t total = static_cast<std::size_t>(width) * height;
+
+		if (streams.size() != 3) {
+			throw std::invalid_argument("ChannelExtractor: Invalid number of streams");
+		}
+
+		for (int c = 0; c < 3; c++) {
+			if (streams[c].size() != total) {
+				throw std::invalid_argument("ChannelExtractor: Invalid number of symbols");
+			}
+		}
+
+		modelo::Image img(width, height);
+
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
+				// Mesma posição nos três fluxos: um valor por pixel em cada um.
+				std::size_t i = static_cast<std::size_t>(y) * width + x;
+
+				for (int c = 0; c < 3; c++) {
+					std::uint32_t valor = streams[c][i];
+					if (valor > 255) {
+						throw std::invalid_argument("ChannelExtractor: Corrupted file");
+					}
+					img.setPixel(x, y, c, static_cast<std::uint8_t>(valor));
+				}
+			}
+		}
+		return img;
+	}
 
 	std::string ChannelExtractor::getName() const {
 		return "ChannelExtractor";
