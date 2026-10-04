@@ -1,26 +1,22 @@
 #ifndef ALGORITMOS_PREDICAO_NO_PREDICTOR_H
 #define ALGORITMOS_PREDICAO_NO_PREDICTOR_H
 
-#include <string>
+#include "Predictor.hpp"
 
+namespace algoritmos::predicao {
 
-#include "algoritmos/predicao/Predictor.hpp"
-#include "modelo/Image.hpp"
+	class NoPredictor : public Predictor {
 
-namespace algoritmos
-{
-namespace predicao
-{
-class NoPredictor : public Predictor
-{
-protected:
-	uint8_t predict(modelo::Image img, int x, int y, int c);
+	public:
+		std::string getName() const override { return "NoPredictor"; };
 
-public:
-	std::string getName();
+	protected:
+		std::uint8_t predict(const modelo::Image& img, int, int, int) const override {
+			return 0;
+		};
 
-};
+	};
 
-}  // namespace predicao
-}  // namespace algoritmos
+}  // namespace algoritmos::predicao
 #endif
+
