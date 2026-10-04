@@ -1,26 +1,19 @@
 #ifndef ALGORITMOS_PREDICAO_LEFT_PREDICTOR_H
 #define ALGORITMOS_PREDICAO_LEFT_PREDICTOR_H
 
-#include <string>
+#include "Predictor.hpp"
 
-#include "algoritmos/predicao/Predictor.hpp"
-#include "modelo/Image.hpp"
+namespace algoritmos::predicao {
 
-namespace algoritmos
-{
-namespace predicao
-{
-class LeftPredictor : public Predictor
-{
-protected:
-	uint8_t predict(modelo::Image img, int x, int y, int c);
+	class LeftPredictor : public Predictor {
 
-public:
-	std::string getName();
+	public:
+		std::string getName() const override { return "LeftPredictor"; };
 
-};
-
-}  // namespace predicao
-}  // namespace algoritmos
-
+	protected:
+		std::uint8_t predict(const modelo::Image& img, int x, int y, int c) const override {
+			return (x > 0) ? img.getPixel(x - 1, y, c) : 0;
+		};
+	};
+}  // namespace algoritmos::predicao
 #endif
