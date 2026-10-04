@@ -2,23 +2,15 @@
 #define SERVICO_HEADER_INFO_H
 
 #include <string>
-#include <list>
 
-namespace servico
-{
-struct HeaderInfo
-{
-public:
+namespace servico {
+
+struct HeaderInfo {
 	int width;
-
 	int height;
-
 	int numStreams;
-
 	std::string predictorName;
-
 	std::string extractorName;
-
 };
 
 }  // namespace servico
