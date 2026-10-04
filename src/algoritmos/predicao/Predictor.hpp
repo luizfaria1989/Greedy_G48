@@ -1,30 +1,26 @@
 #ifndef ALGORITMOS_PREDICAO_PREDICTOR_H
 #define ALGORITMOS_PREDICAO_PREDICTOR_H
 
-#include <string>
-
 #include "modelo/Image.hpp"
 
-namespace algoritmos
-{
-namespace predicao
-{
-class Predictor
-{
-protected:
-	virtual uint8_t predict(modelo::Image img, int x, int y, int c)=0;
+#include <cstdint>
+#include <string>
+
+namespace algoritmos::predicao {
+
+class Predictor {
 
 public:
-	modelo::Image encode(modelo::Image img);
+	virtual ~Predictor() =  default;
 
-	modelo::Image decode(modelo::Image res);
+	modelo::Image encode(const modelo::Image& img) const;
+	modelo::Image decode(const modelo::Image& res) const;
+	virtual std::string getName() const = 0;
 
-	virtual std::string getName()=0;
-
-	˜Predictor();
+protected:
+	virtual std::uint8_t predict(const modelo::Image& img, int x, int y, int c) const = 0;
 
 };
 
-}  // namespace predicao
-}  // namespace algoritmos
+}  // namespace algoritmos::predicao
 #endif
