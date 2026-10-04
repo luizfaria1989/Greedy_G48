@@ -1,28 +1,19 @@
 #ifndef ALGORITMOS_PREDICAO_PAETH_PREDICTOR_H
 #define ALGORITMOS_PREDICAO_PAETH_PREDICTOR_H
 
-#include <string>
-#include <vector>
-#include <list>
-#include <assert.h>
-
 #include "algoritmos/predicao/Predictor.hpp"
-#include "modelo/Image.hpp"
 
-namespace algoritmos
-{
-namespace predicao
-{
-class PaethPredictor : public Predictor
-{
-protected:
-	uint8_t predict(modelo::Image img, int x, int y, int c);
+namespace algoritmos::predicao {
+
+class PaethPredictor : public Predictor {
 
 public:
-	std::string getName();
+	std::string getName() const override { return "PaethPredictor"; }
+
+protected:
+	uint8_t predict(const modelo::Image& img, int x, int y, int c) const override;
 
 };
 
-}  // namespace predicao
-}  // namespace algoritmos
+}  // namespace algoritmos::predicao
 #endif
