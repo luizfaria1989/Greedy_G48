@@ -1,25 +1,20 @@
 #ifndef ALGORITMOS_PREDICAO_UP_PREDICTOR_H
 #define ALGORITMOS_PREDICAO_UP_PREDICTOR_H
 
-#include <string>
+#include "Predictor.hpp"
 
-#include "algoritmos/predicao/Predictor.hpp"
-#include "modelo/Image.hpp"
+namespace algoritmos::predicao {
 
-namespace algoritmos
-{
-namespace predicao
-{
-class UpPredictor : public Predictor
-{
-protected:
-	uint8_t predict(modelo::Image img, int x, int y, int c);
+class UpPredictor : public Predictor {
 
 public:
-	std::string getName();
+	std::string getName() const override { return "UpPredictor"; };
 
+protected:
+	std::uint8_t predict(const modelo::Image& img, int x, int y, int c) const override {
+		return (y > 0) ? img.getPixel(x, y -1, c) : 0;
+	};
 };
 
-}  // namespace predicao
-}  // namespace algoritmos
+}  // namespace algoritmos::predicao
 #endif
