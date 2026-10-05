@@ -12,6 +12,7 @@
 #include "servico/Compressor.hpp"
 
 #include <chrono>
+#include <cstdio>
 #include <filesystem>
 #include <iostream>
 #include <stdexcept>
@@ -54,6 +55,14 @@ CommandLineApp::CommandLineApp(int argc, char** argv)
 int CommandLineApp::run() {
 
 	try {
+		parseArguments();
+	} catch (std::exception& e) {
+		std::cerr << e.what() << std::endl;
+		printUsage();
+		return 1;
+	}
+
+	try {
 		if (mode == "comprimir") {
 			auto predictor = createPredictor(predictorName);
 			auto extractor = createExtractor(extractorName);
@@ -75,6 +84,7 @@ int CommandLineApp::run() {
 			compressor.decompress(inputPath, outputPath);
 			double seconds = secondsSince(start);
 
+			std::printf("Descomprimido em %.3f s\n", seconds);
 		} else {
 			runBenchmark();
 		}
@@ -117,9 +127,9 @@ void CommandLineApp:: parseArguments() {
 		const std::string& option = args[i];
 		bool hasValue = (i + 1 < args.size());
 
-		if (option == "--predictor" && hasValue) {
+		if ((option == "--preditor" || option == "--predictor") && hasValue) {
 			predictorName = args[++i];
-		} else if (option == "--extractor" && hasValue) {
+		} else if ((option == "--extrator" || option == "--extractor") && hasValue) {
 			extractorName = args[++i];
 		} else {
 			throw std::invalid_argument("Unknown option");
@@ -135,12 +145,13 @@ std::unique_ptr<algoritmos::predicao::Predictor> CommandLineApp::createPredictor
 
 	using namespace algoritmos::predicao;
 
-	if (name == "NoPredictor") return  std::make_unique<NoPredictor>();
-	if (name == "UpPredictor") return std::make_unique<UpPredictor>();
-	if (name == "LeftPredictor") return std::make_unique<LeftPredictor>();
-	if (name == "PaethPredictor") return std::make_unique<PaethPredictor>();
+	// Aceita o nome curto da linha de comando e o nome da classe gravado no cabecalho do .huff.
+	if (name == "nenhum" || name == "NoPredictor") return std::make_unique<NoPredictor>();
+	if (name == "cima" || name == "UpPredictor") return std::make_unique<UpPredictor>();
+	if (name == "esquerda" || name == "LeftPredictor") return std::make_unique<LeftPredictor>();
+	if (name == "paeth" || name == "PaethPredictor") return std::make_unique<PaethPredictor>();
 
-	throw std::invalid_argument("Unknown predictor name" + name);
+	throw std::invalid_argument("Unknown predictor name: " + name);
 
 }
 
@@ -148,10 +159,10 @@ std::unique_ptr<algoritmos::extracao::SymbolExtractor> CommandLineApp::createExt
 
 	using namespace algoritmos::extracao;
 
-	if (name == "ChannelExtractor") return std::make_unique<ChannelExtractor>();
-	if (name == "PackedPixelExtractor") return std::make_unique<PackedPixelExtractor>();
+	if (name == "canal" || name == "ChannelExtractor") return std::make_unique<ChannelExtractor>();
+	if (name == "pixel" || name == "PackedPixelExtractor") return std::make_unique<PackedPixelExtractor>();
 
-	throw std::invalid_argument("Unknown extractor name" + name);
+	throw std::invalid_argument("Unknown extractor name: " + name);
 
 }
 
@@ -160,13 +171,13 @@ void CommandLineApp::runBenchmark() const{
 	const std::vector<std::string> predictor = {"NoPredictor", "UpPredictor", "LeftPredictor", "PaethPredictor",};
 	const std::vector<std::string> extractor = {"ChannelExtractor", "PackedPixelExtractor",};
 
-	const std::string huffPath = inputPath + "bench.huff";
-	const std::string ppmPath = inputPath + "bench.ppm";
+	const std::string huffPath = inputPath + ".bench.huff";
+	const std::string ppmPath = inputPath + ".bench.ppm";
 
 	modelo::Image original = io::PPMFile::read(inputPath);
 	std::size_t originalSize = fileSize(inputPath);
 
-	std::printf("%-10s %-8s %12s %10s %10s %s\n", "preditor", "extrator", "comprimido", "taxa", "comp (s)", "desc(s)", "lossless");
+	std::printf("%-16s %-22s %12s %10s %10s %10s %s\n", "preditor", "extrator", "comprimido", "taxa", "comp (s)", "desc (s)", "lossless");
 
 	for (const std::string& p : predictor) {
 		for (const std::string& e : extractor) {
@@ -186,16 +197,16 @@ void CommandLineApp::runBenchmark() const{
 			double ratio = 100.0 * static_cast<double>(compressedSize) / static_cast<double>(originalSize);
 			bool ok = sameImage(original, io::PPMFile::read(ppmPath));
 
-			std::printf("%-10s %-8s %12zu %7.2f%% %10.3f %10.3f %s\n", p.c_str(), e.c_str(), compressedSize, ratio, compressSeconds, decompressSeconds, ok ? "OK" : "FAILED");
+			std::printf("%-16s %-22s %12zu %9.2f%% %10.3f %10.3f %s\n", p.c_str(), e.c_str(), compressedSize, ratio, compressSeconds, decompressSeconds, ok ? "OK" : "FAILED");
 		}
 	}
-	std::filesystem::remove(inputPath);
+	std::filesystem::remove(huffPath);
 	std::filesystem::remove(ppmPath);
 
 }
 
 void CommandLineApp::printStats(std::size_t originalSize, std::size_t compressedSize, double seconds) const{
-	double ratio = 1000.0 * static_cast<double>(compressedSize) / static_cast<double>(originalSize);
+	double ratio = 100.0 * static_cast<double>(compressedSize) / static_cast<double>(originalSize);
 
 	std::printf("Original: %zu bytes\n", originalSize);
 	std::printf("Comprimido: %zu bytes\n", compressedSize);
