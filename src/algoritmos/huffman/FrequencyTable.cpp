@@ -42,6 +42,10 @@ std::uint64_t FrequencyTable::getFrequency(std::uint32_t symbol) const {
 	return it->second;
 }
 
+	const FrequencyTable::Counts& FrequencyTable::getCounts() const {
+		return counts;
+	}
+
 	std::uint64_t FrequencyTable::getTotal() const {
 		std::uint64_t total = 0;
 		for (const auto& entry : counts) {
