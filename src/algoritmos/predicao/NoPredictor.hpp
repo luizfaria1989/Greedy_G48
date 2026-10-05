@@ -11,7 +11,7 @@ namespace algoritmos::predicao {
 		std::string getName() const override { return "NoPredictor"; };
 
 	protected:
-		std::uint8_t predict(const modelo::Image& img, int, int, int) const override {
+		std::uint8_t predict(const modelo::Image&, int, int, int) const override {
 			return 0;
 		};
 
