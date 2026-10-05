@@ -1,9 +1,9 @@
-# Greed_Simulador-de-Cidade
+# Greed_Compressor-Huffman
 
 **Número da Lista**: 48<br>
 **Conteúdo da Disciplina**: Algoritmos Ambiciosos (Gulosos)<br>
-**Nome da aplicação**: Cidade em Fluxo<br>
-**Status**: implementado em Python, com interface visual e experimentos por terminal.
+**Nome da aplicação**: huff, compressor de imagens sem perdas<br>
+**Status**: implementado em C++17, com programa de linha de comando e suíte de testes automáticos.
 
 ## Alunos
 
@@ -14,231 +14,199 @@
 
 ## Sobre
 
-Cidade em Fluxo é um simulador acadêmico que permite observar como semáforos e uma nova via afetam os congestionamentos. A cidade é um grafo dirigido de 16 cruzamentos; veículos são agentes com origem, destino, rota e estado. Um motor de eventos discretos controla chegadas, filas e liberações de passagem.
+O `huff` comprime imagens PPM (formato `P6`, 8 bits por canal) **sem perdas**: a imagem descomprimida é idêntica, byte a byte, à original. A compressão acontece em três etapas: um **preditor** transforma cada pixel na diferença para um vizinho, um **extrator** separa o resultado em fluxos de símbolos e a **codificação de Huffman** grava cada fluxo com códigos mais curtos para os símbolos mais frequentes.
 
-O foco acadêmico agora é **Scheduling to Minimize Lateness**, implementado de forma independente na pasta [`scheduling_minimize_lateness/`](scheduling_minimize_lateness/). O algoritmo clássico ordena tarefas pelo prazo mais próximo para minimizar o maior atraso em uma única máquina. No trânsito, cada fase elegível de um cruzamento recebe um prazo; o semáforo escolhe primeiro a fase cujo prazo vence antes. A interface e os experimentos comparam essa política com ciclo fixo e com a regra anterior de maior fila, em malhas com e sem a nova via.
+O foco acadêmico é a **codificação de Huffman**, um algoritmo guloso clássico. Ele monta a árvore de códigos juntando sempre os dois nós de menor frequência, e essa escolha local produz um código de prefixo ótimo. O programa também compara quatro preditores e dois extratores, o que dá oito combinações para medir qual comprime melhor cada tipo de imagem.
 
 ## Instalação
 
-**Linguagem**: Python 3.13 recomendado (ambiente utilizado na validação)<br>
-**Interface**: Pygame 2.6.1<br>
-**Grafos e rotas**: NetworkX 3.6.1<br>
-**Eventos e testes**: `heapq` e `unittest`, da biblioteca padrão.
+**Linguagem**: C++17<br>
+**Compilador**: Clang ou GCC<br>
+**Build**: CMake 3.16 ou superior<br>
+**Testes**: sem bibliotecas externas (duas macros próprias, `CHECK` e `CHECK_THROWS`)<br>
+**Opcional**: ImageMagick, só para converter fotos para PPM.
 
-No PowerShell, dentro da pasta do projeto:
+No terminal, dentro da pasta do projeto:
 
-```powershell
-py -3.13 -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
-.\.venv\Scripts\python.exe main.py
+```bash
+cmake -S . -B build-release -DCMAKE_BUILD_TYPE=Release
+cmake --build build-release
 ```
 
-Não é necessário ativar o ambiente virtual. Se as dependências já estiverem instaladas no Python 3.13, também é possível executar diretamente:
+Isso gera dois executáveis: `huff` (o programa) e `huff_tests` (os testes). Ambos usam a mesma biblioteca de classes, `huff_core`.
 
-```powershell
-py -3.13 main.py
+Para converter uma foto qualquer para PPM de 8 bits:
+
+```bash
+magick minha_foto.jpg -depth 8 imagens/minha_foto.ppm
 ```
 
 ## Uso
 
-1. Escolha **Prazo (EDD)**, **Fila maior** ou **Ciclo fixo** e habilite ou desabilite a **Nova via**.
-2. Configure a demanda, a semente e a duração. Cada botão percorre os valores disponíveis; a semente aumenta em uma unidade.
-3. Clique em **Iniciar**. Veículos azuis estão em movimento; amarelos estão nas filas. Os carros são desenhados na ordem da via: quem ainda está em movimento fica atrás da cauda da fila. Ruas mais ocupadas ficam mais avermelhadas.
-4. Clique em um cruzamento para consultar as filas por entrada, o tempo de espera do primeiro veículo, o prazo de atendimento, o sinal e a disponibilidade da próxima rua. A lâmpada verde indica a entrada com passagem aberta; **"Saída: Livre"** indica somente que há espaço adiante e não autoriza a passagem durante o vermelho. No histórico da última decisão, `BLOQ` significa que a rua seguinte estava cheia naquele instante; ela pode estar livre quando você consultar o painel depois.
-5. Pause e clique em **Próximo evento** para acompanhar a lógica passo a passo. Vários eventos podem ocorrer no mesmo instante.
-6. Clique em **Comparar** para executar os seis cenários A–F com a mesma demanda. A comparação pausa a execução atual e abre uma tabela de resultados.
-7. Use **Exportar CSV** para salvar a comparação ou, se nenhuma comparação tiver sido executada, as métricas da execução atual em `resultados/`.
-
-Alterar política, via, demanda, semente ou duração reinicia a simulação e limpa a comparação anterior. A velocidade de reprodução não altera os resultados. Reiniciar mantém os parâmetros e reproduz os mesmos pedidos de viagem.
-
-| Ação | Controle |
-| -- | -- |
-| Iniciar ou pausar | Botão ou `Espaço` |
-| Processar um evento e pausar | Botão ou `N` |
-| Reiniciar com a mesma configuração | Botão ou `R` |
-| Comparar os seis cenários | Botão ou `C` |
-| Exportar CSV | Botão ou `E` |
-| Fechar comparação ou cancelar seu cálculo | `Esc` |
-| Inspecionar cruzamento | Clique no círculo do cruzamento |
-| Alterar velocidade visual | Botão: 1×, 4×, 10× ou 20× |
-
-A interface oferece demandas de 20, 45 e 80 veículos/minuto e durações de 120, 300 e 600 segundos. Parâmetros personalizados podem ser definidos ao iniciar. Sem `--comparar`, informe uma semente e uma demanda; `--saida` se aplica somente à comparação por terminal:
-
-```powershell
-py -3.13 main.py --sementes 7 --demandas 60 --duracao 450
+```bash
+./build-release/huff comprimir <entrada.ppm> <saida.huff> [--preditor NOME] [--extrator NOME]
+./build-release/huff descomprimir <entrada.huff> <saida.ppm>
+./build-release/huff benchmark <entrada.ppm>
 ```
+
+| Opção | Valores | Padrão |
+| -- | -- | -- |
+| `--preditor` | `nenhum`, `esquerda`, `cima`, `paeth` | `paeth` |
+| `--extrator` | `canal`, `pixel` | `canal` |
+
+O `descomprimir` lê no cabeçalho do `.huff` qual combinação foi usada, então não recebe opções. Exemplo de ida e volta, conferindo que a imagem é idêntica:
+
+```bash
+./build-release/huff comprimir imagens/foto_kodak.ppm foto.huff
+./build-release/huff descomprimir foto.huff volta.ppm
+cmp imagens/foto_kodak.ppm volta.ppm && echo "IDENTICO"
+```
+
+O `benchmark` roda as oito combinações sobre uma imagem e mostra, para cada uma, o tamanho comprimido, a taxa, os tempos e se o resultado voltou idêntico (`OK`). Argumentos inválidos mostram a mensagem de erro e as instruções de uso, com código de saída 1. Erros de execução, como abrir um arquivo que não é `.huff`, mostram só a mensagem, também com código 1.
 
 ## Algoritmos e modelagem
 
-### Cidade e agentes
+### Codificação de Huffman (o algoritmo guloso)
 
-- **Grafo dirigido**: 16 nós, nomeados de A1 a D4, e 48 arestas na malha original. Uma rua de mão dupla corresponde a duas arestas.
-- **Ruas comuns**: comprimento de 120 m, velocidade nominal de 48 km/h, percurso livre de 9 s e capacidade de 9 veículos por sentido.
-- **Nova via**: conexão expressa elevada entre B1 e B4, nos dois sentidos, sem cruzamentos intermediários. Cada sentido tem 300 m, velocidade nominal de 72 km/h, percurso de 15 s e capacidade de 15 veículos. O desenho é esquemático, sem escala física.
-- **Veículos**: agentes com rota fixa, que passam pelos estados de espera externa, movimento, fila e viagem concluída. São admitidos e liberados respeitando a capacidade das ruas.
-- **Filas FIFO**: o veículo mais antigo passa primeiro. Quem aguarda no semáforo continua ocupando espaço na rua de chegada. Se a próxima rua está cheia, o primeiro veículo bloqueia sua fila.
-- **Entradas externas**: cada origem mantém uma fila FIFO fora da rede. A admissão tenta liberar um veículo a cada 2 s enquanto há espera; esses veículos são contabilizados separadamente.
-- **Destino**: ao chegar ao nó final, o veículo deixa a rede sem aguardar um semáforo para realizar outra conversão.
-
-A demanda é gerada com intervalos exponenciais e taxa configurada em veículos/minuto. Em 60% dos sorteios, a viagem usa o corredor B1–B4 (com 30% dessas viagens no sentido inverso); nos demais, origem e destino são sorteados entre os nós da borda. A semente controla todos esses sorteios.
-
-### Scheduling to Minimize Lateness: algoritmo clássico
-
-O problema clássico recebe tarefas disponíveis desde o início para **uma única máquina**. Cada tarefa `j` tem duração `p_j` e prazo `d_j`. Se termina no instante `C_j`, seu atraso é `L_j = C_j - d_j` (negativo quando termina antes do prazo). O objetivo é minimizar `L_max = max_j L_j`. A solução gulosa **Earliest Deadline First (EDD)** ordena as tarefas por prazo crescente e executa sem ociosidade. A implementação isolada em `scheduling_minimize_lateness/` retorna a ordem, os intervalos de execução e o atraso máximo; os testes a comparam com todas as permutações em instâncias pequenas. Ordenar `n` tarefas custa **O(n log n)**.
-
-Exemplo reproduzível: `A` dura 4 s e vence em 6 s; `B` dura 3 s e vence em 4 s; `C` dura 2 s e vence em 9 s. A ordem EDD é **B → A → C** e tem `L_max = 1 s`; na ordem de entrada A → B → C, `L_max = 3 s`. A ordenação por prazo reduz o maior atraso na formulação clássica; ela não escolhe rotas. Veja a [demonstração e prova da estratégia EDD nas notas de Princeton](https://www.cs.princeton.edu/courses/archive/spr05/cos423/lectures/04greed.pdf).
-
-Para executar a demonstração independente da cidade:
-
-```powershell
-py -3.13 -m scheduling_minimize_lateness
-```
-
-### Adaptação EDD aos semáforos
-
-Cada **fase elegível** de um cruzamento representa uma tarefa de verde de 10 segundos. O prazo da fase é o instante em que o primeiro carro entrou na fila **mais 45 segundos**. A cada decisão, o controlador EDD escolhe a fase com o prazo absoluto mais próximo. Se a rua seguinte ao primeiro carro estiver cheia, essa fase não é elegível naquele instante. A troca de fase acrescenta 2 segundos de vermelho geral.
-
-O simulador registra a violação de prazo de cada período de verde que teve fila como `max(0, fim_do_verde - prazo)`, além de contar esses períodos e os que terminaram atrasados. Essa métrica positiva difere do `L_max` assinado do algoritmo teórico. Um período pode ser contado mesmo se uma rua cheia impedir a passagem; por isso o número de veículos concluídos deve ser avaliado em separado. Os carros podem chegar durante o processamento, há vários cruzamentos e ruas podem ficar bloqueadas. **Por isso, a prova de optimalidade do problema clássico não se transfere à cidade inteira.** O algoritmo puro demonstra o resultado teórico; a simulação mostra o comportamento de uma política EDD inspirada nele. Para avaliar o efeito real, compare também viagens concluídas, tempo de viagem, filas e veículos que ainda aguardam.
-
-### Política de referência: maior fila
-
-Cada entrada de um cruzamento é uma fase independente. Somente uma entrada recebe verde por vez, permitindo conversões sem liberar simultaneamente entradas conflitantes.
+Dado um conjunto de símbolos com suas frequências, queremos atribuir a cada um uma sequência de bits de modo que nenhum código seja prefixo de outro e o tamanho total do texto codificado seja o menor possível.
 
 ```text
-candidatos = fases com fila e espaço na próxima rua do primeiro veículo
-se há candidato esperando pelo menos 45 segundos:
-    escolher a maior espera
-senão:
-    escolher a maior fila
-empates: fase há mais tempo sem atendimento; depois identificador
+heap = uma folha para cada símbolo, ordenada por frequência
+enquanto o heap tiver mais de um nó:
+    a = remover o nó de menor frequência
+    b = remover o nó de menor frequência
+    inserir um nó pai com frequência(a) + frequência(b), filhos a (esquerda) e b (direita)
+a raiz é a árvore; o caminho até cada folha (esquerda = 0, direita = 1) é o código
 ```
 
-Exemplo: uma entrada com 8 veículos tem prioridade sobre outra com 3. Se a rua seguinte ao primeiro veículo da fila de 8 estiver cheia, ela fica inelegível e a fila de 3 pode ser atendida. Uma espera de pelo menos 45 s ativa a regra de prioridade por idade, desde que haja espaço na saída.
+**Por que é guloso?** Em cada passo, a escolha é local e definitiva: os dois nós de menor frequência são unidos, sem reconsiderar essa decisão depois. Um argumento de troca prova que isso é ótimo: existe uma árvore ótima na qual os dois símbolos menos frequentes são irmãos nas folhas mais profundas, e portanto juntá-los primeiro não piora o resultado. Aplicando o argumento a cada passo, o código de Huffman minimiza o comprimento médio entre todos os códigos de prefixo.
 
-Cada verde dura 10 s, com liberação de até um veículo a cada 2 s. Trocar a fase inclui 2 s de vermelho geral. Se o guloso escolher novamente a fase atual, o verde continua sem intervalo de transição. A escolha é reavaliada ao fim do verde, sem interrompê-lo por chegadas intermediárias.
+**Complexidade.** Para `n` símbolos distintos, o heap faz `n - 1` junções, cada uma com duas remoções e uma inserção em **O(log n)**, somando **O(n log n)**. A geração dos códigos percorre a árvore uma vez, em **O(n)**. O espaço é **O(n)**.
 
-**Por que é guloso?** Essa política de referência escolhe a maior fila disponível localmente, sem explorar sequências futuras de decisões. O limite de espera é uma restrição adicional de atendimento, não uma garantia de espera máxima: a rede pode estar bloqueada. Não há garantia de solução global ótima.
+**Exemplo reproduzível (verificado pelos testes).** Com A = 5, B = 2, C = 1 e D = 1 ocorrências, o algoritmo une C e D (peso 2), depois B e esse nó (peso 4), e por fim esse nó com A. Os códigos resultantes são `A = 1`, `B = 00`, `C = 010` e `D = 011`. A sequência "ABCD" vira `1 00 010 011` e ocupa 2 bytes (137 e 128 em decimal, com o último preenchido com zeros).
 
-A seleção percorre as `k` fases do cruzamento em **O(k)**, usando listas auxiliares com espaço **O(k)**. A implementação está em `algoritmos/__init__.py`.
+**Determinismo.** Frequências iguais desempatam pela ordem de criação dos nós, com os símbolos ordenados antes de entrar no heap. Assim, a árvore montada na compressão e a montada na descompressão (a partir da tabela gravada no arquivo) são idênticas, e o decodificador sempre acerta os códigos. Se houver um único símbolo, ele recebe o código `0`, de 1 bit.
 
-### Ciclo fixo
+### Preditores
 
-Percorre as entradas em uma ordem determinística, com os mesmos 10 s de verde, 2 s de transição e intervalo de saída de 2 s. Não adapta a escolha às filas: pode abrir uma entrada vazia enquanto outra está congestionada. A saída de veículos continua respeitando a capacidade da próxima rua.
+O preditor substitui cada valor pela diferença para uma previsão feita com pixels já conhecidos, em aritmética módulo 256. Em fotos, pixels vizinhos têm valores próximos, então as diferenças se concentram perto de 0 e o Huffman as codifica com poucos bits. A operação é reversível: o `decode` refaz a previsão e soma de volta.
 
-### Rotas e eventos discretos
+| Preditor | Previsão para o pixel |
+| -- | -- |
+| `nenhum` | 0 (os resíduos são a própria imagem) |
+| `esquerda` | pixel à esquerda |
+| `cima` | pixel acima |
+| `paeth` | entre esquerda, acima e canto superior esquerdo, o mais próximo de `esquerda + acima − canto` |
 
-O Dijkstra, do NetworkX, calcula a rota inicial com o tempo nominal de cada rua como peso não negativo. A rota é fixa durante a viagem e é recalculada na criação de cada veículo quando a malha muda. Dijkstra é um apoio à simulação; a comparação principal avalia as políticas dos semáforos.
+Exemplo do Paeth: em uma imagem 2×2 com vermelho `10, 20 / 30, 35`, o pixel (1,1) tem esquerda 30, acima 20 e canto 10. A estimativa é 30 + 20 − 10 = 40, e o vizinho mais próximo é a esquerda (30), então o resíduo é 35 − 30 = 5.
 
-Os eventos ficam em uma fila de prioridade `heapq`, ordenados por `(instante, prioridade do tipo, sequência de inserção)`. No mesmo instante, entradas e chegadas são processadas antes das decisões e liberações dos semáforos; as admissões externas ocorrem depois das liberações. Assim, uma decisão enxerga as filas que acabaram de receber veículos, e uma origem pode aproveitar espaço recém-liberado. A sequência desempata eventos do mesmo tipo de maneira reproduzível. Inserir e remover eventos custa **O(log E)**, para `E` eventos pendentes, além do processamento de cada evento.
+### Extratores
 
-O relógio avança entre eventos de entrada, admissão, chegada, decisão, abertura de verde e liberação. A animação interpola posições entre instantes do motor; a velocidade visual não muda a dinâmica nem as métricas.
+| Extrator | Fluxos de símbolos |
+| -- | -- |
+| `canal` | 3 fluxos, um por canal (R, G, B), com símbolos de 0 a 255 |
+| `pixel` | 1 fluxo, com cada pixel empacotado em um símbolo `R·65536 + G·256 + B` |
+
+O `canal` tem alfabeto pequeno e tabelas leves. O `pixel` captura a correlação entre os canais, mas tem um alfabeto de até 16 milhões de símbolos, o que pesa na tabela de frequências.
+
+### Formato do arquivo `.huff`
+
+```text
+"HUF1"                                     4 bytes (identificação)
+largura, altura, número de fluxos          3 × uint32
+nome do preditor, nome do extrator         cada um: tamanho (uint32) + texto
+para cada fluxo:
+    tabela de frequências                  quantidade (uint32), depois pares (símbolo uint32, frequência uint64)
+    bits dos códigos de Huffman            preenchidos com zeros até completar o último byte
+```
+
+O arquivo é autocontido: o `descomprimir` descobre a combinação pelo cabeçalho. Descomprimir com um preditor diferente do gravado é rejeitado com erro, em vez de produzir uma imagem errada.
 
 ## Organização do código
 
-| Arquivo ou pasta | Responsabilidade |
+| Pasta ou arquivo | Responsabilidade |
 | -- | -- |
-| `main.py` | Argumentos do terminal e inicialização |
-| `cidade.py` | Grafo, ruas, capacidade e cálculo das rotas |
-| `veiculo.py` | Pedidos de viagem e estado dos agentes |
-| `semaforo.py` | Estado das fases e parâmetros de controle |
-| `scheduling_minimize_lateness/` | EDD clássico, demonstração e hipóteses do teorema |
-| `algoritmos/` | Seleção das políticas de semáforo |
-| `simulacao.py` | Motor de eventos e interação dos agentes |
-| `metricas.py` | Integração temporal das filas |
-| `experimentos.py` | Comparações pareadas e exportação CSV |
-| `render/` | Interface, mapa, inspeção e tabela de resultados |
-| `tests/` | Testes do motor, políticas e interface |
-| `capturas.py` | Geração reproduzível das capturas abaixo |
+| `src/main.cpp` | Ponto de entrada |
+| `src/app/` | `CommandLineApp`: argumentos, fábricas de preditor e extrator, estatísticas e benchmark |
+| `src/servico/` | `Compressor` (compressão e descompressão) e `HeaderInfo` (cabeçalho) |
+| `src/algoritmos/huffman/` | `HuffmanNode`, `FrequencyTable`, `HuffmanTree` |
+| `src/algoritmos/extracao/` | `SymbolStream`, `ChannelExtractor`, `PackedPixelExtractor` |
+| `src/algoritmos/predicao/` | `Predictor`, `NoPredictor`, `LeftPredictor`, `UpPredictor`, `PaethPredictor` |
+| `src/io/` | `PPMFile`, `BitWriter`, `BitReader` |
+| `src/modelo/` | `Image` |
+| `tests/` | Suíte de testes, um arquivo por camada |
+| `docs/` | Diagramas UML e imagens do README |
 
 ## Experimentos e comparação
 
-| Cenário | Malha viária | Controle |
-| -- | -- | -- |
-| A | Original | Ciclo fixo |
-| B | Original | Maior fila |
-| C | Com nova via | Ciclo fixo |
-| D | Com nova via | Maior fila |
-| E | Original | Prazo (EDD) |
-| F | Com nova via | Prazo (EDD) |
+O comando `benchmark` compara as oito combinações de preditor e extrator na mesma imagem e confere, em cada uma, que a descompressão devolve a imagem original (`OK`).
 
-Cada conjunto A–F reutiliza exatamente os mesmos pedidos: origens, destinos e horários de chegada. As comparações **E−A** e **E−B** isolam o efeito do EDD na malha original; **F−C** e **F−D** fazem o mesmo com a nova via. A comparação **F−E** mostra o efeito da via sob EDD. As demais comparações preservam as referências anteriores. Como a via altera as rotas escolhidas, seu efeito inclui tanto o novo trecho quanto a redistribuição do tráfego.
+Resultado com a foto Kodak `kodim23` (768×512, 1.179.663 bytes em PPM), compilada em Release:
 
-Para executar sem janela, com várias sementes e níveis de demanda:
+| Preditor | Extrator | Comprimido (bytes) | Taxa | Compressão (s) | Descompressão (s) |
+| -- | -- | --: | --: | --: | --: |
+| nenhum | canal | 1.100.987 | 93,33% | 0,029 | 0,037 |
+| nenhum | pixel | 1.576.680 | 133,66% | 0,065 | 0,067 |
+| cima | canal | 620.434 | 52,59% | 0,029 | 0,036 |
+| cima | pixel | 662.402 | 56,15% | 0,030 | 0,034 |
+| esquerda | canal | 647.214 | 54,86% | 0,030 | 0,036 |
+| esquerda | pixel | 742.378 | 62,93% | 0,032 | 0,036 |
+| **paeth** | **canal** | **599.863** | **50,85%** | 0,036 | 0,041 |
+| paeth | pixel | 680.655 | 57,70% | 0,034 | 0,039 |
 
-```powershell
-py -3.13 main.py --comparar --sementes 42 43 44 --demandas 20 45 80 --duracao 300 --saida resultados/experimentos.csv
-```
+Todas as oito combinações voltaram idênticas. Observações:
 
-Esse comando produz **54 linhas** no CSV: seis cenários para cada combinação de três sementes e três demandas. O arquivo usa UTF-8 com BOM e separador `;`. O terminal também mostra diferenças **pareadas por semente**, separadas por demanda. Para cada comparação, apresenta a média e o intervalo mínimo–máximo das diferenças em viagens concluídas, fila média total e atraso máximo de fase. Sementes repetidas são recusadas, pois repetir o mesmo sorteio não representa uma nova repetição experimental.
-
-Leia os sinais das diferenças conforme a métrica: **positivo em concluídos** significa mais viagens terminadas; **negativo em fila média ou atraso máximo** significa menos congestionamento ou menor violação dos prazos nas fases atendidas. A variação entre sementes ajuda a verificar se a conclusão depende de um sorteio específico. O tempo médio de viagem no terminal e no CSV inclui apenas viagens concluídas; acompanhe também `gerados`, `em_circulacao` e `aguardando_entrada` para não interpretar uma média baixa produzida por muitas viagens ainda pendentes.
-
-### Definição das métricas
-
-| Campo no CSV | Significado |
-| -- | -- |
-| `gerados` | Pedidos de viagem que chegaram até o instante observado |
-| `concluidos` | Viagens que chegaram ao destino |
-| `em_circulacao` | Veículos em movimento ou nas filas internas |
-| `aguardando_entrada` | Veículos na fila externa, ainda fora da rede |
-| `viagem_media_s` | Média da chegada ao destino menos o instante do pedido, incluindo espera externa; somente viagens concluídas |
-| `espera_media_s` | Espera acumulada nos semáforos por veículo que entrou na rede, incluindo esperas ainda em andamento |
-| `espera_maxima_s` | Maior episódio individual de espera em um cruzamento, concluído ou ainda aberto |
-| `espera_externa_media_s` | Espera fora da rede por pedido gerado, incluindo os que ainda aguardam entrada |
-| `fila_media_total` | Integral da soma das filas internas dividida pelo tempo simulado |
-| `fila_maxima_via` | Maior fila observada em uma única rua direcionada |
-| `fila_atual_total` | Soma das filas internas no instante observado |
-| `fases_atendidas` | Períodos de verde terminados que encontraram uma fila, mesmo se uma saída cheia impediu a passagem |
-| `fases_atrasadas` | Desses períodos, quantos terminaram depois do prazo do primeiro carro |
-| `atraso_maximo_fase_s` | Maior violação positiva de prazo entre esses períodos; não inclui períodos ainda em andamento |
-
-Se nenhuma viagem terminar, o tempo médio de viagem fica vazio no CSV e aparece como travessão na interface. A simulação para no horizonte configurado sem esvaziar artificialmente a rede. Verifique sempre os veículos restantes: uma média baixa apenas entre os que chegaram pode esconder congestionamento.
-
-### Exemplo reproduzível
-
-Resultados para semente **42**, demanda **45 veículos/min** e duração **300 s**, com 234 pedidos:
-
-| Cenário | Concluídos | Viagem média (s) | Fila média total | Maior atraso de fase (s) | Na cidade | Fora da rede |
-| -- | --: | --: | --: | --: | --: | --: |
-| A | 119 | 96,5 | 31,5 | 49,9 | 42 | 73 |
-| B | 156 | 64,5 | 22,2 | 30,0 | 36 | 42 |
-| C | 214 | 32,0 | 10,5 | 4,6 | 20 | 0 |
-| D | 219 | 25,8 | 4,9 | 4,0 | 15 | 0 |
-| E | 147 | 64,5 | 21,6 | 24,1 | 44 | 43 |
-| F | 219 | 26,4 | 5,3 | 4,0 | 15 | 0 |
-
-Nesse exemplo, **E** reduz o maior atraso de fase em relação a **B** (24,1 contra 30,0 s), mas conclui menos viagens (147 contra 156). Isso mostra a diferença entre reduzir atraso máximo e maximizar vazão. A via expressa atende diretamente a demanda predominante e melhora bastante os cenários C, D e F neste modelo. Uma semente não demonstra que qualquer nova rua ou política EDD sempre melhora uma cidade real.
+- **O Paeth foi o melhor preditor** nesta foto, seguido de `cima` e `esquerda`. A previsão mais elaborada aproveita melhor a correlação entre vizinhos.
+- **Sem preditor, quase não há ganho** (93,33% com `canal`), porque os valores brutos de uma foto são pouco repetitivos.
+- **`nenhum` + `pixel` aumenta o arquivo** (133,66%): quase todo pixel é um símbolo diferente, e a tabela de frequências, com um registro de 12 bytes por símbolo distinto, ocupa mais que os dados.
+- **O `canal` venceu o `pixel`** em todos os preditores nesta imagem. Os resultados são de uma única foto: em outras imagens, como capturas de tela com poucas cores, a ordem entre `canal` e `pixel` pode mudar.
 
 ## Screenshots
 
-### Cidade e inspeção do prazo EDD
+### Original e restaurada pelo programa
 
-![Cidade em execução com filas e decisão do controlador](assets/cidade.png)
+![Original à esquerda e imagem descomprimida à direita](docs/lado_a_lado.png)
 
-### Malha com a via expressa elevada
+### Diferença entre as duas (toda preta: nenhum pixel difere)
 
-![Nova via entre B1 e B4](assets/nova-via.png)
+![Diferença entre a imagem original e a descomprimida](docs/diferenca.png)
 
-### Comparação dos seis cenários
+### Diagramas
 
-![Tabela de comparação A B C D E F](assets/comparacao.png)
+![Diagrama de classes](docs/Class_Huffman.png)
 
-As capturas são geradas pelo próprio renderizador com a semente 42. Para reproduzi-las sem abrir uma janela:
+![Diagrama de sequência da compressão](docs/Sequence_Comprimir.png)
 
-```powershell
-py -3.13 capturas.py
-```
+![Diagrama de sequência da descompressão](docs/Sequence_Descomprimir.png)
 
 ## Validação
 
-```powershell
-py -3.13 -m unittest discover -s tests -v
+```bash
+cmake -S . -B build-debug -DCMAKE_BUILD_TYPE=Debug
+cmake --build build-debug --target huff_tests
+./build-debug/huff_tests
 ```
 
-Os testes cobrem a optimalidade do EDD clássico em instâncias pequenas por comparação com todas as ordens possíveis, a adaptação por prazo no semáforo, desempates, bloqueio da próxima rua, ordem FIFO, capacidade, conservação dos veículos, transição dos sinais, métricas com resultado conhecido, eventos simultâneos no horizonte, determinismo, comparação A–F, exportação, posição dos carros atrás da fila, cores das lâmpadas e controles da interface com vídeo virtual.
+O perfil Debug liga o AddressSanitizer e o UndefinedBehaviorSanitizer, que param o programa na hora em que um acesso fora de limites ou um comportamento indefinido acontece. A saída termina com o resumo `140/140 verificacoes passaram` e o programa retorna código 0 se tudo passou, ou 1 se algo falhou.
+
+São 45 testes automáticos, organizados em seis suítes (uma por camada). Cada teste monta uma entrada pequena em memória, executa um método e compara o resultado com um valor calculado à mão, como os códigos `1`, `00`, `010` e `011` do exemplo acima ou o pixel empacotado `660510`:
+
+| Suíte | O que cobre |
+| -- | -- |
+| modelo | Dimensões, leitura e gravação de pixels, limites e dimensões inválidas |
+| io | PPM (ida e volta, comentários no cabeçalho, arquivos inválidos), `BitWriter` e `BitReader` (bits, bytes, alinhamento, fim de arquivo) |
+| huffman | Nós, tabela de frequências (ida e volta, tabela truncada), códigos, codificação ponta a ponta, símbolo único, determinismo |
+| extração | Fluxos por canal e por pixel, ida e volta, entradas inválidas, nomes |
+| predição | Resíduos de cada preditor, Paeth calculado à mão, volta do módulo 256, ida e volta dos quatro |
+| serviço | As oito combinações em arquivos reais, casos de borda, cabeçalho, arquivo que não é `.huff`, preditor trocado, ponteiro nulo |
+
+O `CommandLineApp` não tem testes automáticos; foi conferido à mão no terminal (argumentos inválidos, ida e volta com `cmp`, descompressão de um arquivo que não é `.huff` e `benchmark`).
 
 ## Outros
 
-Este é um modelo acadêmico simplificado: velocidade constante nos trechos, filas pontuais, uma entrada aberta por vez, admissão externa simplificada e rotas sem replanejamento. O desenho respeita a ordem dos carros na via, mas não simula aceleração nem distância de segurança física; congestionamento é modelado por filas e capacidade finita. Ciclos de ruas cheias podem bloquear o trânsito, e veículos retidos continuam nas métricas.
+Limitações conhecidas:
 
-Não são modelados pedestres, colisões, acidentes, transporte público, dados reais ou aprendizado de máquina. O objetivo é explicar a relação entre decisões locais de algoritmos ambiciosos e seus efeitos globais na rede.
+- O programa só lê PPM binário (`P6`) com valor máximo 255. Outros formatos precisam ser convertidos antes, por exemplo com ImageMagick. Arquivos RAW perdem a profundidade acima de 8 bits nessa conversão.
+- A imagem inteira, os resíduos e os fluxos ficam em memória; uma foto muito grande consome centenas de megabytes.
+- O `.huff` grava inteiros na ordem de bytes da máquina que o criou. Arquivos criados e lidos em processadores little-endian (Apple Silicon e x86) funcionam entre si; a portabilidade para outras arquiteturas não foi tratada.
+- Os resultados do benchmark vêm de uma única foto; para conclusões mais gerais, compare várias imagens de tipos diferentes.
