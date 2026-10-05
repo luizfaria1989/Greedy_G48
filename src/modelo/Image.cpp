@@ -13,11 +13,11 @@ Image::Image(int width, int height)
 }
 
 std::size_t Image::index(int x, int y, int c) const {
-	if (x < 0|| x >= width || y < 0 || y >= height || c < 0 || c >= 2) {
+	if (x < 0|| x >= width || y < 0 || y >= height || c < 0 || c >= 3) {
 		throw std::out_of_range("Pixels fora");
 	}
 
-	return (static_cast<std::size_t>(y) * width * x) * 3 + c;
+	return (static_cast<std::size_t>(y) * width + x) * 3 + c;
 }
 
 std::uint8_t Image::getPixel(int x, int y, int c) const {
