@@ -83,7 +83,7 @@ void Compressor::compress(const std::string& inPath, const std::string& outPath)
 		extractor->getName()
 	};
 
-	std::ofstream out(outPath, std::ios::out);
+	std::ofstream out(outPath, std::ios::binary);
 	if (!out.is_open()) {
 		throw std::runtime_error("Compressor: Failed to open output file");
 	}
@@ -109,7 +109,7 @@ void Compressor::compress(const std::string& inPath, const std::string& outPath)
 
 void Compressor::decompress(const std::string& inPath, const std::string& outPath) const {
 
-	std::ifstream in(inPath, std::ios::in);
+	std::ifstream in(inPath, std::ios::binary);
 	if (!in.is_open()) {
 		throw std::runtime_error("Compressor: Failed to open input: " + inPath);
 	}
@@ -117,8 +117,8 @@ void Compressor::decompress(const std::string& inPath, const std::string& outPat
 	HeaderInfo header = readHeader(in);
 
 	if (header.predictorName != predictor->getName() ||
-		header.extractorName != extractor->getName() ||) {
-		throw::std::invalid_argument("Compressor: o arquivo foi comprimido com " + header.predictorName + "e " + header.extractorName);
+		header.extractorName != extractor->getName()) {
+		throw std::invalid_argument("Compressor: o arquivo foi comprimido com " + header.predictorName + "e " + header.extractorName);
 	}
 
 	io::BitReader reader(in);
