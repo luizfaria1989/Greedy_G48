@@ -47,8 +47,6 @@ modelo::Image PPMFile::read(const std::string& path) {
 
 	in.read(reinterpret_cast<char*>(buffer.data()), static_cast<std::streamsize>(total));
 
-	in.read(reinterpret_cast<char*>(buffer.data()), static_cast<std::streamsize>(total));
-
 	if (static_cast<std::size_t>(in.gcount()) != total) {
 		throw std::runtime_error("Trucanded PPM File: " + path);
 	}
