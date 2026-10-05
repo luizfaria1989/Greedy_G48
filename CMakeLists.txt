@@ -19,7 +19,6 @@ add_executable(Greedy_G48
         src/algoritmos/extracao/ChannelExtractor.hpp
         src/algoritmos/extracao/PackedPixelExtractor.cpp
         src/algoritmos/extracao/PackedPixelExtractor.hpp
-        src/algoritmos/extracao/SymbolExtractor.cpp
         src/algoritmos/extracao/SymbolExtractor.hpp
         src/algoritmos/extracao/SymbolStream.hpp
         src/algoritmos/huffman/FrequencyTable.cpp
@@ -28,15 +27,12 @@ add_executable(Greedy_G48
         src/algoritmos/huffman/HuffmanNode.hpp
         src/algoritmos/huffman/HuffmanTree.cpp
         src/algoritmos/huffman/HuffmanTree.hpp
-        src/algoritmos/predicao/LeftPredictor.cpp
         src/algoritmos/predicao/LeftPredictor.hpp
-        src/algoritmos/predicao/NoPredictor.cpp
         src/algoritmos/predicao/NoPredictor.hpp
         src/algoritmos/predicao/PaethPredictor.cpp
         src/algoritmos/predicao/PaethPredictor.hpp
         src/algoritmos/predicao/Predictor.cpp
         src/algoritmos/predicao/Predictor.hpp
-        src/algoritmos/predicao/UpPredictor.cpp
         src/algoritmos/predicao/UpPredictor.hpp
         src/app/CommandLineApp.cpp
         src/app/CommandLineApp.hpp
@@ -50,4 +46,5 @@ add_executable(Greedy_G48
         src/modelo/Image.hpp
         src/servico/Compressor.cpp
         src/servico/Compressor.hpp
-        src/servico/HeaderInfo.hpp)
+        src/servico/HeaderInfo.hpp
+        src/main.cpp)
